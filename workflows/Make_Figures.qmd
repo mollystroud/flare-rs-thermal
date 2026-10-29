@@ -22,6 +22,7 @@ scores_aggregated <- arrow::open_dataset(paste0(here::here(), "/scores/parquet")
   filter(datetime > "2021-01-01") |>
   filter(variable == "temperature") |>
   filter(horizon > 0) |>
+  filter(model_id != "analysis_run_with_insitu_rs") |>
   mutate(model_id = as.factor(model_id)) |>
   group_by(model_id, horizon) |>
   summarize(median_crps = median(crps, na.rm = T),
@@ -35,9 +36,8 @@ ggplot(data = scores_aggregated,
   geom_line(linewidth = 0.9) +
   scale_linetype_manual(name = "",
                         values = setNames(c("solid", "solid", "dashed", "dotted", "solid", "dashed"), groups))  +
-  scale_color_manual(name = "", 
+  scale_color_manual(name = "",
                      values = setNames(c("#440154FF", "#2A788EFF","#2A788EFF","#2A788EFF", "#7AD151FF","#7AD151FF"), groups)) +
-
   labs(y = 'Median CRPS (°C)', x = 'Horizon (days ahead)', color = "") +
   theme_bw() +
   theme(legend.key.width = unit(2, "line"))
@@ -54,7 +54,8 @@ scores_sites <- arrow::open_dataset(paste0(here::here(), "/scores/parquet")) |>
   dplyr::collect() |>
   filter(datetime > "2021-01-01") |>
   filter(variable == "temperature") |>
-  filter(horizon > 0) |>
+  filter(horizon > 0) |>  
+  filter(model_id != "analysis_run_with_insitu_rs") |>
   mutate(model_id = as.factor(model_id)) |>
   group_by(model_id, horizon, site_id) |>
   summarize(crps = median(crps, na.rm = T),
@@ -62,7 +63,7 @@ scores_sites <- arrow::open_dataset(paste0(here::here(), "/scores/parquet")) |>
 
 levels(scores_sites$model_id) <- c("No DA", "In situ (all depths)", "In situ (RS frequency)", "In situ (surface)", "RS", "RS (in situ uncertainty)")
 
-groups <- c("No DA", "In situ (all depths)", "In situ (surface)", "In situ (RS frequency)", "RS", "RS (in situ uncertainty)")
+groups <- c("No DA", "In situ (all depths)", "In situ (RS frequency)", "In situ (surface)", "RS", "RS (in situ uncertainty)")
 
 sitenames <- as_labeller(c("BARC" = "Lake Barco",
                "bvre" = "Beaverdam\nReservoir",
@@ -82,7 +83,7 @@ without_pr <- ggplot(data = scores_sites[scores_sites$site_id != "PRPO" & scores
   facet_wrap(~site_id, nrow = 2, labeller = sitenames) +
   scale_linetype_manual(name = "",
                         values = setNames(c("solid", "solid", "dashed", "dotted", "solid", "dashed"), groups))  +
-  scale_color_manual(name = "", 
+  scale_color_manual(name = "",
                      values = setNames(c("#440154FF", "#2A788EFF","#2A788EFF","#2A788EFF", "#7AD151FF","#7AD151FF"), groups)) +
   labs(y = 'Median CRPS (°C)', x = 'Horizon (days ahead)', color = "") +
   theme_bw() +
@@ -97,18 +98,18 @@ with_pr <- ggplot(data = scores_sites[scores_sites$site_id == "PRPO" | scores_si
   facet_wrap(~site_id, nrow = 2, labeller = sitenames) +
   scale_linetype_manual(name = "",
                         values = setNames(c("solid", "solid", "dashed", "dotted", "solid", "dashed"), groups))  +
-  scale_color_manual(name = "", 
+  scale_color_manual(name = "",
                      values = setNames(c("#440154FF", "#2A788EFF","#2A788EFF","#2A788EFF", "#7AD151FF","#7AD151FF"), groups)) +
   labs(y = 'Median CRPS (°C)', x = 'Horizon (days ahead)', color = "") +
   theme_bw() +
   theme(legend.position = 'bottom', legend.margin = margin(t = -10),
-        strip.text = element_text(size=8))
+        strip.text = element_text(size=8), legend.key.width = unit(2, "line"))
 #with_pr
 
 without_pr + with_pr + 
   plot_layout(widths = c(4,1), guides = "collect", axis_titles = "collect") &
   theme(legend.position = 'bottom', strip.text = element_text(size = 9), legend.key.width = unit(2, "line"))
-  #theme(legend.position = "bottom", strip.text = element_text(size = 6))
+  theme(legend.position = "bottom", strip.text = element_text(size = 6))
 
 
 #ggsave(paste0(here::here(), '/paper_figs/', 'Figure3.png'), width = 6, height = 4, units = 'in', dpi = 400)
@@ -154,7 +155,9 @@ results <- alldata |>
 
 results_all <- left_join(results, overall_accuracy, by = c("site_id"))
 
-ggplot(results_all, aes(x = median_crps, y = abs(bias), color = site_id)) +
+ggplot(results_all, aes(x = median_crps, y = abs(bias), 
+                        color = site_id, 
+                        shape = site_id)) +
   geom_point() +
   theme_bw() +
   geom_smooth(se = F, method = 'lm', aes(group = 1), 
@@ -170,8 +173,19 @@ ggplot(results_all, aes(x = median_crps, y = abs(bias), color = site_id)) +
                                 "PRPO" = "Prairie Pothole",
                                 "SUGG" = "Lake Suggs",
                                 "sunp" = "Lake Sunapee")) +
+  scale_shape_manual(values = c(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
+                     labels = c("BARC" = "Lake Barco",
+                                "bvre" = "Beaverdam Reservoir",
+                                "ccre" = "Carvins Cove Reservoir",
+                                "CRAM" = "Crampton Lake",
+                                "fcre" = "Falling Creek Reservoir",
+                                "LIRO" = "Little Rock Lake",
+                                "PRLA" = "Prairie Lake",
+                                "PRPO" = "Prairie Pothole",
+                                "SUGG" = "Lake Suggs",
+                                "sunp" = "Lake Sunapee")) +
   labs(x = "Median CRPS (°C)", y = "Remote sensing observation \n median absolute bias (°C)",
-       color = "")
+       color = " ", shape = " ")
 
 #ggsave(paste0(here::here(), '/paper_figs/', 'Figure4.png'), width = 5, height = 3, units = 'in', dpi = 400)
 
@@ -195,9 +209,11 @@ scores_depth <- scores_depth |>
   na.omit()
 
 rs_depth <- ggplot(scores_depth[scores_depth$model_id == "analysis_run_with_rs",], 
-       aes(x = median_crps, y = depth, color = site_id, group = site_id)) +
-  geom_line(orientation = "y", linewidth = 0.9) +
-  geom_point(size = 1) +
+       aes(x = median_crps, y = depth, 
+           color = site_id, group = site_id,
+           linetype = site_id)) +
+  geom_line(orientation = "y", linewidth = 0.9) + # 0.5 for color blind figs
+  #geom_point(size = 1) +
   theme_bw() +
   scale_color_manual(values = wes_palette(10, name = "Zissou1", type = 'continuous'),
                      labels = c("BARC" = "Lake Barco",
@@ -210,8 +226,20 @@ rs_depth <- ggplot(scores_depth[scores_depth$model_id == "analysis_run_with_rs",
                                 "PRPO" = "Prairie Pothole",
                                 "SUGG" = "Lake Suggs",
                                 "sunp" = "Lake Sunapee")) +
+  scale_linetype_manual(values = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10),
+                     labels = c("BARC" = "Lake Barco",
+                                "bvre" = "Beaverdam\nReservoir",
+                                "ccre" = "Carvins Cove\nReservoir",
+                                "CRAM" = "Crampton Lake",
+                                "fcre" = "Falling Creek\nReservoir",
+                                "LIRO" = "Little Rock Lake",
+                                "PRLA" = "Prairie Lake",
+                                "PRPO" = "Prairie Pothole",
+                                "SUGG" = "Lake Suggs",
+                                "sunp" = "Lake Sunapee")) +
   scale_y_continuous(trans = c("reverse")) +
-  labs(x = "Median CRPS (°C)", y = "Depth (m)", color = "", tag = "(a)") +
+  labs(x = "Median CRPS (°C)", y = "Depth (m)", 
+       color = "", tag = "(a)", linetype = "") +
   theme(plot.tag.position = c(0.02, 1))
 
 
@@ -222,10 +250,11 @@ diff_df <- scores_depth |>
             .groups = "drop")
 
 diff_depth <- ggplot(diff_df, 
-       aes(x = median_crps_diff, y = depth, color = site_id, group = site_id)) +
-    geom_vline(xintercept = 0, linetype = 'dashed', color = 'darkgray') +
+       aes(x = median_crps_diff, y = depth, 
+           color = site_id, group = site_id, 
+           linetype = site_id)) +
   geom_line(orientation = "y", linewidth = 0.9) +
-  geom_point(size = 1) +
+  #geom_point(size = 1) +
   theme_bw() +
   scale_color_manual(values = wes_palette(10, name = "Zissou1", type = 'continuous'),
                      labels = c("BARC" = "Lake Barco",
@@ -238,10 +267,22 @@ diff_depth <- ggplot(diff_df,
                                 "PRPO" = "Prairie Pothole",
                                 "SUGG" = "Lake Suggs",
                                 "sunp" = "Lake Sunapee")) +
+  scale_linetype_manual(values = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10),
+                     labels = c("BARC" = "Lake Barco",
+                                "bvre" = "Beaverdam\nReservoir",
+                                "ccre" = "Carvins Cove\nReservoir",
+                                "CRAM" = "Crampton Lake",
+                                "fcre" = "Falling Creek\nReservoir",
+                                "LIRO" = "Little Rock Lake",
+                                "PRLA" = "Prairie Lake",
+                                "PRPO" = "Prairie Pothole",
+                                "SUGG" = "Lake Suggs",
+                                "sunp" = "Lake Sunapee")) +
   scale_y_continuous(trans = c("reverse")) +
-  labs(x = 'Δ CRPS (°C; with RS - no DA)', y = "Depth (m)", color = "", tag = "(b)") +
+  geom_vline(xintercept = 0, linetype = 'dashed', color = 'darkgray') +
+  labs(x = 'Δ CRPS (°C; with RS - no DA)', y = "Depth (m)", 
+       color = "", tag = "(b)", linetype = "") +
   theme(plot.tag.position = c(0.02, 1)) +
-  geom_vline(xintercept = 0, color = 'gray40', linetype = 'dashed') +
   annotate('text', x = -0.7, y = 11, label = 'RS performs\nbetter', 
            color = 'gray40', size = 3) +
   annotate('text', x = 0.75, y = 11, label = 'no DA\nperforms\nbetter', 
@@ -249,8 +290,7 @@ diff_depth <- ggplot(diff_df,
 
 rs_depth + diff_depth + plot_layout(guides = "collect", axis_titles = "collect")
 
-#ggsave(paste0(here::here(), '/paper_figs/'), 'Figure5.png'), width = 6.5, height = 4.5, units = 'in')
-
+#ggsave(paste0(here::here(), '/paper_figs/', 'FigureS5.png'), width = 6.5, height = 4.5, units = 'in', dpi = 400)
 ```
 
 ## Figure 6
@@ -307,7 +347,8 @@ anno_df <- data.frame(
   label = c("no DA performs better", "RS performs better")
 )
 # This figure shows the difference in CRPS between RS and no RS for each season
-ggplot(data = delta_seasons, aes(x = horizon, y = diff_median_crps, color = site_id)) +
+ggplot(data = delta_seasons, aes(x = horizon, y = diff_median_crps, 
+                                 color = site_id, linetype = site_id)) +
   geom_line(linewidth = 1) +
   facet_wrap(~season) +
   scale_color_manual(values = wes_palette(10, name = "Zissou1", type = 'continuous'),
@@ -321,7 +362,18 @@ ggplot(data = delta_seasons, aes(x = horizon, y = diff_median_crps, color = site
                                 "PRPO" = "Prairie Pothole",
                                 "SUGG" = "Lake Suggs",
                                 "sunp" = "Lake Sunapee")) +
-  labs(y = 'Δ CRPS (RS - no DA) (°C)', x = 'Horizon (days ahead)', color = "") +
+  scale_linetype_manual(values = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10),
+                        labels = c("BARC" = "Lake Barco",
+                                   "bvre" = "Beaverdam\nReservoir",
+                                   "ccre" = "Carvins Cove\nReservoir",
+                                   "CRAM" = "Crampton Lake",
+                                   "fcre" = "Falling Creek\nReservoir",
+                                   "LIRO" = "Little Rock Lake",
+                                   "PRLA" = "Prairie Lake",
+                                   "PRPO" = "Prairie Pothole",
+                                   "SUGG" = "Lake Suggs",
+                                   "sunp" = "Lake Sunapee")) +
+  labs(y = 'Δ CRPS (RS - no DA) (°C)', x = 'Horizon (days ahead)', color = "", linetype = "") +
   theme_bw() +
   theme(legend.position = 'bottom', 
         legend.spacing.x = unit(0.1, 'cm'),
@@ -352,12 +404,12 @@ reliability_scores <- arrow::open_dataset(paste0(here::here(), "/scores/parquet/
 
   
 rs_reliability <- ggplot(reliability_scores[reliability_scores$model_id == "analysis_run_with_rs",], 
-       aes(x=horizon, y=perc, colour = site_id)) +
+       aes(x=horizon, y=perc, colour = site_id, linetype = site_id)) +
     geom_hline(yintercept = 90, colour = 'darkgray', linetype = 'dashed') +
     geom_line(alpha = 0.8, linewidth = 1) +
     labs(y = 'Percentage of observations within\n90% confidence intervals', 
          x ='Horizon (days)',
-         color = "",
+         color = "", linetype = "",
          tag = "(a)") +
     annotate('text', x = 10, y = 100, label = 'underconfident', 
              size = 4, hjust = 1, color = 'gray30') +
@@ -377,6 +429,17 @@ rs_reliability <- ggplot(reliability_scores[reliability_scores$model_id == "anal
                                 "PRPO" = "Prairie Pothole",
                                 "SUGG" = "Lake Suggs",
                                 "sunp" = "Lake Sunapee")) +
+  scale_linetype_manual(values = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10),
+                        labels = c("BARC" = "Lake Barco",
+                                   "bvre" = "Beaverdam\nReservoir",
+                                   "ccre" = "Carvins Cove\nReservoir",
+                                   "CRAM" = "Crampton Lake",
+                                   "fcre" = "Falling Creek\nReservoir",
+                                   "LIRO" = "Little Rock Lake",
+                                   "PRLA" = "Prairie Lake",
+                                   "PRPO" = "Prairie Pothole",
+                                   "SUGG" = "Lake Suggs",
+                                   "sunp" = "Lake Sunapee")) +
   theme(plot.tag.position = c(0.02, 1))
 
 reliability_scores_surface <- arrow::open_dataset(paste0(here::here(), "/scores/parquet/")) |>
@@ -395,12 +458,12 @@ reliability_scores_surface <- arrow::open_dataset(paste0(here::here(), "/scores/
   mutate(perc = within_TRUE/(within_FALSE + within_TRUE)*100)
   
 rs_reliability_surface <- ggplot(reliability_scores_surface[reliability_scores_surface$model_id == "analysis_run_with_rs",], 
-       aes(x=horizon, y=perc, colour = site_id)) +
+       aes(x=horizon, y=perc, colour = site_id, linetype = site_id)) +
     geom_hline(yintercept = 90, colour = 'darkgray', linetype = 'dashed') +
     geom_line(alpha = 0.8, linewidth = 1) +
     labs(y = 'Percentage of observations within\n90% confidence intervals', 
          x='Horizon (days)',
-         color = "",
+         color = "", linetype = "",
          tag = "(b)") +
     annotate('text', x = 10, y = 100, label = 'underconfident', 
              size = 4, hjust = 1, color = 'gray30') +
@@ -420,11 +483,22 @@ rs_reliability_surface <- ggplot(reliability_scores_surface[reliability_scores_s
                                 "PRPO" = "Prairie Pothole",
                                 "SUGG" = "Lake Suggs",
                                 "sunp" = "Lake Sunapee")) +
+  scale_linetype_manual(values = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10),
+                        labels = c("BARC" = "Lake Barco",
+                                   "bvre" = "Beaverdam\nReservoir",
+                                   "ccre" = "Carvins Cove\nReservoir",
+                                   "CRAM" = "Crampton Lake",
+                                   "fcre" = "Falling Creek\nReservoir",
+                                   "LIRO" = "Little Rock Lake",
+                                   "PRLA" = "Prairie Lake",
+                                   "PRPO" = "Prairie Pothole",
+                                   "SUGG" = "Lake Suggs",
+                                   "sunp" = "Lake Sunapee")) +
   theme(plot.tag.position = c(0.02, 1))
 
 rs_reliability + rs_reliability_surface + plot_layout(guides = "collect", axis_titles = "collect")
 
-#ggsave(paste0(here::here(), '/paper_figs/', 'Figure7.png'), width = 6.5, height = 5, units = 'in')
+#ggsave(paste0(here::here(), '/paper_figs/', 'FigureS7.png'), width = 6.5, height = 5, units = 'in')
  
 ```
 
@@ -475,13 +549,13 @@ variables <- tibble(variable = c("max_depth_m", "fetch_m", "volume_m3", "surface
                     full_name = c("Maximum\ndepth", "Fetch", "Volume", "Surface\narea","Water clarity\n(Secchi depth)","Mean annual air\ntemperature", "Mean annual\nprecipitation","10-day variance in\n air temperature","Mean hydrologic\nresidence time","Catchment\nsize", "Latitude", "# RS images", "RS median\nabsolute bias", "Average\nwind speed", "# stratified days"))
 spear_corr_table <- left_join(spear_corr_table, variables, by = "variable")
 
-ggplot(spear_corr_table, aes(x = rho, y = full_name, color = Metric)) +
+ggplot(spear_corr_table, aes(x = rho, y = full_name, color = Metric, shape = Metric)) +
   geom_point(size = 2) +
   theme_bw() +
   xlim(-1, 1) +
   geom_vline(xintercept = -0.5, linetype = 'dashed') +
   geom_vline(xintercept = 0.5, linetype = 'dashed') +
-  labs(x = "Spearman correlation coefficient", y = element_blank(), color = element_blank()) +#,
+  labs(x = "Spearman correlation coefficient", y = element_blank(), color = "", shape = "") +#,
        #title = "Excluding PRLA + PRPO") +
   scale_color_manual(values = c("accuracy
 degradation" = '#277da1', "accuracy" = '#f94144'))
@@ -493,6 +567,39 @@ degradation" = '#277da1', "accuracy" = '#f94144'))
 ## Supplementary figures
 
 Figure S1
+
+```{r}
+# This figure shows the aggregated CRPS of all sites across all depths
+scores_aggregated <- arrow::open_dataset(paste0(here::here(), "/scores/parquet")) |>
+  dplyr::collect() |>
+  filter(datetime > "2021-01-01") |>
+  filter(variable == "temperature") |>
+  filter(horizon > 0) |>
+  mutate(model_id = as.factor(model_id)) |>
+  group_by(model_id, horizon) |>
+  summarize(median_crps = median(crps, na.rm = T),
+            mean_crps = mean(crps, na.rm = T))
+
+levels(scores_aggregated$model_id) <- c("No DA", "In situ (all depths)", "RS and in situ", "In situ (RS frequency)", "In situ (surface)", "RS", "RS (in situ uncertainty)")
+scores_aggregated$model_id <- factor(scores_aggregated$model_id, levels = c("No DA", "In situ (all depths)", "In situ (RS frequency)", "In situ (surface)", "RS", "RS (in situ uncertainty)", "RS and in situ"))
+groups <- c("No DA", "In situ (all depths)", "In situ (RS frequency)", "In situ (surface)", "RS", "RS (in situ uncertainty)", "RS and in situ")
+
+ggplot(data = scores_aggregated, 
+       aes(x = horizon, y = median_crps, colour = model_id, linetype = model_id)) +
+  geom_line(linewidth = 0.9) +
+  scale_linetype_manual(name = "",
+                        values = setNames(c("solid", "solid", "dashed", "dotted", "solid", "dashed", "solid"), groups))  +
+  scale_color_manual(name = "",
+                     values = setNames(c("#440154FF", "#2A788EFF","#2A788EFF","#2A788EFF", "#7AD151FF","#7AD151FF", "#22A884FF"), groups)) +
+
+  labs(y = 'Median CRPS (°C)', x = 'Horizon (days ahead)', color = "") +
+  theme_bw() +
+  theme(legend.key.width = unit(2, "line"))
+
+ggsave(paste0(here::here(), '/paper_figs/', 'FigureS1.png'), width = 6, height = 3, units = 'in', dpi = 400)
+```
+
+Figure S2
 
 ```{r}
 # This figure shows the remote sensing temperature estimates plotted against the in situ temperature estimates
@@ -527,11 +634,40 @@ ggplot(alldata[alldata$datetime > "2020-10-01" & alldata$datetime < "2023-01-01"
        color = element_blank()) +
   theme(legend.position = 'bottom')
 
-#ggsave(paste0(here::here(), '/paper_figs/', 'FigureS1.png'), width = 7, height = 5, units = 'in')
+ggsave(paste0(here::here(), '/paper_figs/', 'FigureS2.png'), width = 7, height = 5, units = 'in')
 
 ```
 
-Figure S2
+Figure S3
+
+```{r}
+scores_LIRO <- arrow::open_dataset(paste0(here::here(), "/scores/parquet")) |>
+  dplyr::collect() |>
+  filter(datetime > "2021-01-01") |>
+  filter(variable == "temperature") |>
+  filter(horizon > 0) |>
+  filter(site_id == "LIRO") |>
+  filter(model_id == "analysis_run_no_da") |>
+  group_by(horizon) |>
+  summarize(sd = mean(sd, na.rm = T),
+            bias = median(observation - mean, na.rm = T))
+
+
+sd_plot <- ggplot(data = scores_LIRO, aes(x = horizon, y = sd)) +
+  geom_line() +
+  theme_bw() + 
+  labs(x = "Horizon (days)", y = "Standard deviation (°C)")
+
+bias_plot <- ggplot(data = scores_LIRO, aes(x = horizon, y = abs(bias))) +
+  geom_line() +
+  theme_bw() + 
+  labs(x = "Horizon (days)", y = "Median absolute bias (°C)")
+
+sd_plot / bias_plot + plot_layout(axis_titles = "collect")
+ggsave(paste0(here::here(), '/paper_figs/', 'FigureS3.png'), width = 7, height = 5, units = 'in')
+```
+
+Figure S4
 
 ```{r}
 # This figure shows bar plots of the significant Spearman correlation variables
@@ -590,6 +726,6 @@ tempvarplot
 secchiplot + precipplot + latplot + windplot + tempvarplot + 
   plot_layout(nrow = 2, guides = 'collect')
 
-#ggsave(paste0(here::here(), '/paper_figs/', 'FigureS2.png'), width = 10, height = 5, units = 'in')
+ggsave(paste0(here::here(), '/paper_figs/', 'FigureS4.png'), width = 10, height = 5, units = 'in')
 
 ```
