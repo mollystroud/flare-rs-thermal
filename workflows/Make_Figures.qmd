@@ -156,8 +156,8 @@ results <- alldata |>
 results_all <- left_join(results, overall_accuracy, by = c("site_id"))
 
 ggplot(results_all, aes(x = median_crps, y = abs(bias), 
-                        color = site_id, 
-                        shape = site_id)) +
+                        color = site_id)) +#, 
+                        #shape = site_id)) +
   geom_point() +
   theme_bw() +
   geom_smooth(se = F, method = 'lm', aes(group = 1), 
@@ -173,17 +173,17 @@ ggplot(results_all, aes(x = median_crps, y = abs(bias),
                                 "PRPO" = "Prairie Pothole",
                                 "SUGG" = "Lake Suggs",
                                 "sunp" = "Lake Sunapee")) +
-  scale_shape_manual(values = c(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
-                     labels = c("BARC" = "Lake Barco",
-                                "bvre" = "Beaverdam Reservoir",
-                                "ccre" = "Carvins Cove Reservoir",
-                                "CRAM" = "Crampton Lake",
-                                "fcre" = "Falling Creek Reservoir",
-                                "LIRO" = "Little Rock Lake",
-                                "PRLA" = "Prairie Lake",
-                                "PRPO" = "Prairie Pothole",
-                                "SUGG" = "Lake Suggs",
-                                "sunp" = "Lake Sunapee")) +
+  # scale_shape_manual(values = c(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
+  #                    labels = c("BARC" = "Lake Barco",
+  #                               "bvre" = "Beaverdam Reservoir",
+  #                               "ccre" = "Carvins Cove Reservoir",
+  #                               "CRAM" = "Crampton Lake",
+  #                               "fcre" = "Falling Creek Reservoir",
+  #                               "LIRO" = "Little Rock Lake",
+  #                               "PRLA" = "Prairie Lake",
+  #                               "PRPO" = "Prairie Pothole",
+  #                               "SUGG" = "Lake Suggs",
+  #                               "sunp" = "Lake Sunapee")) +
   labs(x = "Median CRPS (°C)", y = "Remote sensing observation \n median absolute bias (°C)",
        color = " ", shape = " ")
 
@@ -210,10 +210,10 @@ scores_depth <- scores_depth |>
 
 rs_depth <- ggplot(scores_depth[scores_depth$model_id == "analysis_run_with_rs",], 
        aes(x = median_crps, y = depth, 
-           color = site_id, group = site_id,
-           linetype = site_id)) +
+           color = site_id, group = site_id)) + #,
+           #linetype = site_id)) +
   geom_line(orientation = "y", linewidth = 0.9) + # 0.5 for color blind figs
-  #geom_point(size = 1) +
+  geom_point(size = 1) +
   theme_bw() +
   scale_color_manual(values = wes_palette(10, name = "Zissou1", type = 'continuous'),
                      labels = c("BARC" = "Lake Barco",
@@ -226,17 +226,17 @@ rs_depth <- ggplot(scores_depth[scores_depth$model_id == "analysis_run_with_rs",
                                 "PRPO" = "Prairie Pothole",
                                 "SUGG" = "Lake Suggs",
                                 "sunp" = "Lake Sunapee")) +
-  scale_linetype_manual(values = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10),
-                     labels = c("BARC" = "Lake Barco",
-                                "bvre" = "Beaverdam\nReservoir",
-                                "ccre" = "Carvins Cove\nReservoir",
-                                "CRAM" = "Crampton Lake",
-                                "fcre" = "Falling Creek\nReservoir",
-                                "LIRO" = "Little Rock Lake",
-                                "PRLA" = "Prairie Lake",
-                                "PRPO" = "Prairie Pothole",
-                                "SUGG" = "Lake Suggs",
-                                "sunp" = "Lake Sunapee")) +
+  # scale_linetype_manual(values = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10),
+  #                    labels = c("BARC" = "Lake Barco",
+  #                               "bvre" = "Beaverdam\nReservoir",
+  #                               "ccre" = "Carvins Cove\nReservoir",
+  #                               "CRAM" = "Crampton Lake",
+  #                               "fcre" = "Falling Creek\nReservoir",
+  #                               "LIRO" = "Little Rock Lake",
+  #                               "PRLA" = "Prairie Lake",
+  #                               "PRPO" = "Prairie Pothole",
+  #                               "SUGG" = "Lake Suggs",
+  #                               "sunp" = "Lake Sunapee")) +
   scale_y_continuous(trans = c("reverse")) +
   labs(x = "Median CRPS (°C)", y = "Depth (m)", 
        color = "", tag = "(a)", linetype = "") +
@@ -251,10 +251,10 @@ diff_df <- scores_depth |>
 
 diff_depth <- ggplot(diff_df, 
        aes(x = median_crps_diff, y = depth, 
-           color = site_id, group = site_id, 
-           linetype = site_id)) +
+           color = site_id, group = site_id)) + #, 
+           #linetype = site_id)) +
   geom_line(orientation = "y", linewidth = 0.9) +
-  #geom_point(size = 1) +
+  geom_point(size = 1) +
   theme_bw() +
   scale_color_manual(values = wes_palette(10, name = "Zissou1", type = 'continuous'),
                      labels = c("BARC" = "Lake Barco",
@@ -267,17 +267,17 @@ diff_depth <- ggplot(diff_df,
                                 "PRPO" = "Prairie Pothole",
                                 "SUGG" = "Lake Suggs",
                                 "sunp" = "Lake Sunapee")) +
-  scale_linetype_manual(values = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10),
-                     labels = c("BARC" = "Lake Barco",
-                                "bvre" = "Beaverdam\nReservoir",
-                                "ccre" = "Carvins Cove\nReservoir",
-                                "CRAM" = "Crampton Lake",
-                                "fcre" = "Falling Creek\nReservoir",
-                                "LIRO" = "Little Rock Lake",
-                                "PRLA" = "Prairie Lake",
-                                "PRPO" = "Prairie Pothole",
-                                "SUGG" = "Lake Suggs",
-                                "sunp" = "Lake Sunapee")) +
+  # scale_linetype_manual(values = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10),
+  #                    labels = c("BARC" = "Lake Barco",
+  #                               "bvre" = "Beaverdam\nReservoir",
+  #                               "ccre" = "Carvins Cove\nReservoir",
+  #                               "CRAM" = "Crampton Lake",
+  #                               "fcre" = "Falling Creek\nReservoir",
+  #                               "LIRO" = "Little Rock Lake",
+  #                               "PRLA" = "Prairie Lake",
+  #                               "PRPO" = "Prairie Pothole",
+  #                               "SUGG" = "Lake Suggs",
+  #                               "sunp" = "Lake Sunapee")) +
   scale_y_continuous(trans = c("reverse")) +
   geom_vline(xintercept = 0, linetype = 'dashed', color = 'darkgray') +
   labs(x = 'Δ CRPS (°C; with RS - no DA)', y = "Depth (m)", 
@@ -348,7 +348,7 @@ anno_df <- data.frame(
 )
 # This figure shows the difference in CRPS between RS and no RS for each season
 ggplot(data = delta_seasons, aes(x = horizon, y = diff_median_crps, 
-                                 color = site_id, linetype = site_id)) +
+                                 color = site_id)) + #, linetype = site_id)) +
   geom_line(linewidth = 1) +
   facet_wrap(~season) +
   scale_color_manual(values = wes_palette(10, name = "Zissou1", type = 'continuous'),
@@ -362,17 +362,17 @@ ggplot(data = delta_seasons, aes(x = horizon, y = diff_median_crps,
                                 "PRPO" = "Prairie Pothole",
                                 "SUGG" = "Lake Suggs",
                                 "sunp" = "Lake Sunapee")) +
-  scale_linetype_manual(values = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10),
-                        labels = c("BARC" = "Lake Barco",
-                                   "bvre" = "Beaverdam\nReservoir",
-                                   "ccre" = "Carvins Cove\nReservoir",
-                                   "CRAM" = "Crampton Lake",
-                                   "fcre" = "Falling Creek\nReservoir",
-                                   "LIRO" = "Little Rock Lake",
-                                   "PRLA" = "Prairie Lake",
-                                   "PRPO" = "Prairie Pothole",
-                                   "SUGG" = "Lake Suggs",
-                                   "sunp" = "Lake Sunapee")) +
+  # scale_linetype_manual(values = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10),
+  #                       labels = c("BARC" = "Lake Barco",
+  #                                  "bvre" = "Beaverdam\nReservoir",
+  #                                  "ccre" = "Carvins Cove\nReservoir",
+  #                                  "CRAM" = "Crampton Lake",
+  #                                  "fcre" = "Falling Creek\nReservoir",
+  #                                  "LIRO" = "Little Rock Lake",
+  #                                  "PRLA" = "Prairie Lake",
+  #                                  "PRPO" = "Prairie Pothole",
+  #                                  "SUGG" = "Lake Suggs",
+  #                                  "sunp" = "Lake Sunapee")) +
   labs(y = 'Δ CRPS (RS - no DA) (°C)', x = 'Horizon (days ahead)', color = "", linetype = "") +
   theme_bw() +
   theme(legend.position = 'bottom', 
@@ -404,7 +404,7 @@ reliability_scores <- arrow::open_dataset(paste0(here::here(), "/scores/parquet/
 
   
 rs_reliability <- ggplot(reliability_scores[reliability_scores$model_id == "analysis_run_with_rs",], 
-       aes(x=horizon, y=perc, colour = site_id, linetype = site_id)) +
+       aes(x=horizon, y=perc, colour = site_id)) + #, linetype = site_id)) +
     geom_hline(yintercept = 90, colour = 'darkgray', linetype = 'dashed') +
     geom_line(alpha = 0.8, linewidth = 1) +
     labs(y = 'Percentage of observations within\n90% confidence intervals', 
@@ -429,17 +429,17 @@ rs_reliability <- ggplot(reliability_scores[reliability_scores$model_id == "anal
                                 "PRPO" = "Prairie Pothole",
                                 "SUGG" = "Lake Suggs",
                                 "sunp" = "Lake Sunapee")) +
-  scale_linetype_manual(values = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10),
-                        labels = c("BARC" = "Lake Barco",
-                                   "bvre" = "Beaverdam\nReservoir",
-                                   "ccre" = "Carvins Cove\nReservoir",
-                                   "CRAM" = "Crampton Lake",
-                                   "fcre" = "Falling Creek\nReservoir",
-                                   "LIRO" = "Little Rock Lake",
-                                   "PRLA" = "Prairie Lake",
-                                   "PRPO" = "Prairie Pothole",
-                                   "SUGG" = "Lake Suggs",
-                                   "sunp" = "Lake Sunapee")) +
+  # scale_linetype_manual(values = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10),
+  #                       labels = c("BARC" = "Lake Barco",
+  #                                  "bvre" = "Beaverdam\nReservoir",
+  #                                  "ccre" = "Carvins Cove\nReservoir",
+  #                                  "CRAM" = "Crampton Lake",
+  #                                  "fcre" = "Falling Creek\nReservoir",
+  #                                  "LIRO" = "Little Rock Lake",
+  #                                  "PRLA" = "Prairie Lake",
+  #                                  "PRPO" = "Prairie Pothole",
+  #                                  "SUGG" = "Lake Suggs",
+  #                                  "sunp" = "Lake Sunapee")) +
   theme(plot.tag.position = c(0.02, 1))
 
 reliability_scores_surface <- arrow::open_dataset(paste0(here::here(), "/scores/parquet/")) |>
@@ -458,7 +458,7 @@ reliability_scores_surface <- arrow::open_dataset(paste0(here::here(), "/scores/
   mutate(perc = within_TRUE/(within_FALSE + within_TRUE)*100)
   
 rs_reliability_surface <- ggplot(reliability_scores_surface[reliability_scores_surface$model_id == "analysis_run_with_rs",], 
-       aes(x=horizon, y=perc, colour = site_id, linetype = site_id)) +
+       aes(x=horizon, y=perc, colour = site_id)) + #, linetype = site_id)) +
     geom_hline(yintercept = 90, colour = 'darkgray', linetype = 'dashed') +
     geom_line(alpha = 0.8, linewidth = 1) +
     labs(y = 'Percentage of observations within\n90% confidence intervals', 
@@ -483,17 +483,17 @@ rs_reliability_surface <- ggplot(reliability_scores_surface[reliability_scores_s
                                 "PRPO" = "Prairie Pothole",
                                 "SUGG" = "Lake Suggs",
                                 "sunp" = "Lake Sunapee")) +
-  scale_linetype_manual(values = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10),
-                        labels = c("BARC" = "Lake Barco",
-                                   "bvre" = "Beaverdam\nReservoir",
-                                   "ccre" = "Carvins Cove\nReservoir",
-                                   "CRAM" = "Crampton Lake",
-                                   "fcre" = "Falling Creek\nReservoir",
-                                   "LIRO" = "Little Rock Lake",
-                                   "PRLA" = "Prairie Lake",
-                                   "PRPO" = "Prairie Pothole",
-                                   "SUGG" = "Lake Suggs",
-                                   "sunp" = "Lake Sunapee")) +
+  # scale_linetype_manual(values = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10),
+  #                       labels = c("BARC" = "Lake Barco",
+  #                                  "bvre" = "Beaverdam\nReservoir",
+  #                                  "ccre" = "Carvins Cove\nReservoir",
+  #                                  "CRAM" = "Crampton Lake",
+  #                                  "fcre" = "Falling Creek\nReservoir",
+  #                                  "LIRO" = "Little Rock Lake",
+  #                                  "PRLA" = "Prairie Lake",
+  #                                  "PRPO" = "Prairie Pothole",
+  #                                  "SUGG" = "Lake Suggs",
+  #                                  "sunp" = "Lake Sunapee")) +
   theme(plot.tag.position = c(0.02, 1))
 
 rs_reliability + rs_reliability_surface + plot_layout(guides = "collect", axis_titles = "collect")
@@ -667,7 +667,9 @@ sd_plot / bias_plot + plot_layout(axis_titles = "collect")
 ggsave(paste0(here::here(), '/paper_figs/', 'FigureS3.png'), width = 7, height = 5, units = 'in')
 ```
 
-Figure S4
+Figures S4-S7 may be created by uncommented the linetype additions in Figures 4-7.
+
+Figure S8
 
 ```{r}
 # This figure shows bar plots of the significant Spearman correlation variables
