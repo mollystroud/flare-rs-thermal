@@ -1,6 +1,6 @@
 # FLARE-RS analysis
 
-The code used in this paper may be found in the R folder and workflows folder. 
+The code used in this paper may be found in the R folder and workflows folder.
 
 ## To produce figures and analysis (recommended)
 
@@ -8,17 +8,17 @@ For those just interested in the visualizations and analysis plots, the forecast
 
 ## To regenerate forecasts (not recommended to long run-times)
 
-First, run `workflows/analysis/install.R`.Second download drivers (`workflows/analysis/download_drivers.R`). Finally run FLARE to generate forecasts (`workflows/analysis/combined_run.R`).  
+First, run `workflows/analysis/install.R`.Second download drivers (`workflows/analysis/download_drivers.R`). Finally run FLARE to generate forecasts (`workflows/analysis/combined_run.R`).
 
 For more information on running FLARE, see <https://github.com/FLARE-forecast/FLAREr/>.
 
 ## Dependencies
 
-You will need a compiled **GLM** (General Lake Model) executable. 
+You will need a compiled **GLM** (General Lake Model) executable.
 
 Downloading remote-sensing imagery (`R/get_LST.R`) requires network access to the Microsoft Planetary Computer STAC API, and driver staging (`download_drivers.R`) requires network access to the FLARE OSN S3 bucket.
 
-## Approach 1 
+## Approach 1
 
 A macOS binary is bundled at `binary/macos-tahoe26/glm`; `workflows/analysis/combined_run.R` currently points `GLM_PATH` at a machine-specific location and must be edited to point at your own GLM build, e.g.:
 
@@ -28,15 +28,15 @@ Sys.setenv('GLM_PATH' = file.path(here::here(), "binary/macos-tahoe26/glm"))
 
 ## Approach 2
 
-Alternatively you can use a preconfigured docker container at 
+Alternatively you can use a preconfigured docker container at
 
 `rqthomas/flare-rocker-open:3.9.0`
 
-follow the instructions at <https://rocker-project.org> for downloading and use the  container that contains Rstudio.
+follow the instructions at <https://rocker-project.org> for downloading and use the container that contains Rstudio.
 
 ## Approach 3
 
-You can build your own binaries following https://github.com/FLARE-forecast/GLMAEDr
+You can build your own binaries following <https://github.com/FLARE-forecast/GLMAEDr>
 
 ## Repository structure
 
@@ -75,6 +75,7 @@ flare-rs-thermal/
 │   ├── <site>-targets-insitu.csv         # Full-resolution in situ observations
 │   ├── <site>-targets-insitu-spaced.csv  # In situ obs subsampled to RS revisit frequency
 │   ├── <site>-targets-insitu-surface.csv # Surface-only in situ observations
+│   └── <site>-targets-rs.csv             # In situ combined with remote sensing
 │   └── <site>-targets-rs.csv             # Remote-sensing (Landsat LST) observations
 │
 ├── scores/parquet/site_id=<site>/         # Forecast scoring output (CRPS, log score, etc.)
